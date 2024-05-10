@@ -35,11 +35,11 @@ const createCard = (initialCards, deleteCard) => {
 
 
 // TODO: Функция удаления ОДНОЙ карточки
-function deleteCard() {
-
-  // нахожу бокс карточки (картинка, заголовок, кнопка-корзина, кнопка-лайк) по второму значению в классе
-  const card = mainContent.querySelector('.card');
-  card.remove(); //убираю карточку
+function deleteCard(evt) {
+  
+  // closest возвращает ближайший родительский элемент с переданным селектором
+  const cardElementDeleted = evt.target.closest('.card');
+  cardElementDeleted.remove(); //убираю карточку
 }
 
 
