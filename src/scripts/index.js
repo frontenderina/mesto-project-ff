@@ -61,3 +61,8 @@ function showCards(initialCards) {
 
 // вывожу массив карточек на страницу, вызывая функцию
 showCards(initialCards);
+
+// ! РАБОТА НАД ПР6
+// импорт главного файла стилей 
+import '../pages/index.css';
+import { initialCards } from '../scripts/cards.js';
