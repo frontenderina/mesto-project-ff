@@ -1,68 +1,158 @@
-// TODO: Темплейт карточки
-// получаю содержимое template
-const cardTemplate = document.querySelector('#card-template').content;
+// ! В файле index.js должны остаться:
+// объявления и инициализация глобальных констант и переменных с DOM-элементами страницы,
+// обработчики событий (при открытии и закрытии попапов; 
+// при отправке форм; обработчик, открывающий попап при клике по изображению карточки);
+// вызовы других функций, подключённых из созданных модулей, 
+// которым нужно будет передавать объявленные здесь переменные и обработчики.
+// ---------------------------
 
+// экспорт функции модального окна, отрывающегося при клике по изображению
+export { openImagePopup };
+
+// импорт главного файла стилей
+import '../pages/index.css';
+import { createCard, deleteCard, activeLikeButton, cardsContainer } from '../scripts/card.js';
+import { openPopupWindow, addPopupOpened, closeModal, addPopupAnimated, removePopupOpened } from '../scripts/modal.js';
+// ---------------------------
 
 // TODO: DOM узлы
-// получаю объект, принадлежащий <main>
-const mainContent = document.querySelector('.content');
-// получаю объект-место, куда буду вставлять карточки
-const cardsContainer = mainContent.querySelector('.places__list');
 
+// получаю объект-заголовок профиля "Жак-Ив Кусто"
+const profileTitle = document.querySelector('.profile__title');
+// получаю объект-описание профиля "Исследователь океана"
+const profileDescription = document.querySelector('.profile__description');
+// кнопка(+) открытия окна добавления карточки
+const openAddButton = document.querySelector('.profile__add-button');
+// ---------------------------
 
-// TODO: Функция создания ОДНОЙ карточки
-const createCard = (initialCards, deleteCard) => {
+// *-- DOM узлы формы редактирования профиля пользователя --
+
+// получаю объект-родитель, в котором находится форма пользователя
+const popapProfile = document.querySelector('.popup_type_edit');
+// получаю форму редактирования профиля пользователя
+const formEditProfile = document.forms['edit-profile'];
+
+// получаю элементы формы профиля пользователя через свойство формы elements
+// форма редактирования профиля пользователя. Имя.
+const nameInput = formEditProfile.elements.name;
+// форма редактирования профиля пользователя. Описание занятия.
+const jobInput = formEditProfile.elements.description;
+// получаю кнопку-ручку открытия окна редактирования профиля
+const openEditButton = document.querySelector('.profile__edit-button');
+// ---------------------------
+
+// *-- DOM узлы формы добавления нового места --
+
+// получаю div-контейнер добавления карточки нового места
+const placePopup = document.querySelector('.popup_type_new-card');
+const boxPopupNewCard = document.querySelector('.popup_type_new-card');
+// получаю форму добавления карточки нового места
+const formElementPlace = document.forms['new-place'];
+// получаю инпут для введения названия места новой карточки
+const nameNewCard = formElementPlace.querySelector('.popup__input_type_card-name');
+// получаю инпут для ссылки на картинку нового места
+const linkNewCard = formElementPlace.querySelector('.popup__input_type_url');
+// получаю кнопку формы нового места
+const saveButtonNewCard = formElementPlace.querySelector('.popup__button');
+// ---------------------------
+
+// *-- DOM узлы данные для модального окна большой картинки --
+
+// получаю объект div-контейнер для модального окна большой картинки
+const popupImageWindow = document.querySelector('.popup_type_image');
+// ещё один div
+const popupContentImage = popupImageWindow.querySelector('.popup__content_content_image');
+// картинка
+const popupImage = popupContentImage.querySelector('.popup__image');
+// описание
+const popupCaptionImage = popupContentImage.querySelector('.popup__caption');
+// ---------------------------
+
+// ! общие DOM узлы. Переносить выше нельзя, потомучто пропадают картинки
+
+// получаю все кнопки: картинки и форм "редакции профиля","новое место"
+const closePopupButtons = document.querySelectorAll('.popup__close');
+
+// ---------------------------
+
+// *-- ввод данных в форму редактирования профиля --
+// вызываю функцию добавления класса popup_is-animated
+addPopupAnimated(popapProfile);
+
+function handleFormSubmit(evt) {
+  // отменяю стандартную отправку формы
+  evt.preventDefault();
+  // вставляю новые значения с помощью textContent
+  profileTitle.textContent = nameInput.value;
+  profileDescription.textContent = jobInput.value;
   
-  // получаю объект, включающий фото, кнопку-корзину, заголовок, кнопку-лайк
-  // клонирую со всеми потомками методом (cloneNode(true))
-  const cardElement = cardTemplate.querySelector('.places__item').cloneNode(true);
-
-  // к найденным объектам добавляю информацию из массива карточек (файл cards.js)
-  cardElement.querySelector('.card__title').textContent = initialCards.name;
-  cardElement.querySelector('.card__image').src = initialCards.link;
-  cardElement.querySelector('.card__image').alt = initialCards.name;
-  
-  // получаю кнопку-корзину, которая удаляет карточку
-  const cardDeleteButton = cardElement.querySelector('.card__delete-button');
-
-  // вешаю слушатель на кнопку-корзину
-  // 2-й параметр - функция-колбэк, которая сработает при клике и удалит карточку
-  cardDeleteButton.addEventListener('click', deleteCard);
-
-  // результат работы функции - подготовленная к выводу карточка. Карточка пока не выведена.
-  return cardElement;
+  // вызываю функцию удаления класса popup_is-opened
+  removePopupOpened(popapProfile);
 }
 
+// прикрепляю обработчик к форме:
+// он будет следить за событием “submit” - «отправка»
+formEditProfile.addEventListener('submit', handleFormSubmit);
+// ---------------------------
 
-// TODO: Функция удаления ОДНОЙ карточки
-function deleteCard(evt) {
+// *-- ввод данных в форму добавления новой карточки --
+
+function createNewCardData(evt) {
+  // отменяю стандартную отправку формы
+  evt.preventDefault();
   
-  // closest возвращает ближайший родительский элемент с переданным селектором
-  const cardElementDeleted = evt.target.closest('.card');
-  cardElementDeleted.remove(); //убираю карточку
-}
+  // создаю новый объект по синтаксису "конструктор объекта"
+  const newCardData = new Object();
+  // наполняю новый объект значениями, введённые в поля формы инпутов новой карточки
+  newCardData.name = nameNewCard.value;
+  newCardData.link = linkNewCard.value;
 
+  const postNewCard = createCard(newCardData, deleteCard, activeLikeButton, openImagePopup);
+  
+  // добавляю карточку на страницу в начало
+  cardsContainer.prepend(postNewCard);
+  // сбрасываю значения полей ввода
+  evt.target.reset();
+  
+  // вызываю функцию удаления класса popup_is-opened
+  removePopupOpened(boxPopupNewCard);
+  }
+  
+  // прикрепляю обработчик к форме добавления карточки нового места
+  // он будет следить за событием “submit” - «отправка»
+  formElementPlace.addEventListener('submit', createNewCardData);
+// ---------------------------
 
-// TODO: Вывести карточки на страницу
-function showCards(initialCards) {
+// *-- функция отрытия большой картинки --
 
-  // перебираю массив с карточками (initialCards)
-  // при forEach функция будет вызвана на каждом элементе массива поочерёдно
-  initialCards.forEach(function (item) {
+// передаю её аргументом в функцию создания карточки createCard в параметр openPopupCallBack
+function openImagePopup(initialCards) {
+  
+  //картинка модального окна - элемент массива картинок
+  popupImage.src = initialCards.link;
+  
+  // текст модального окна - элемент массива картинок
+  popupCaptionImage.textContent = initialCards.name;
+  
+  // alt картинки модального окна - название картинок из массива
+  popupCaptionImage.alt = initialCards.name;
+  
+  // вызываю функцию добавления класса popup_is-opened
+  // аргумент - div-контейнер для модального окна большой картинки
+  addPopupOpened(popupImageWindow);
+  // вызываю функцию добавления класса popup_is-animated
+  addPopupAnimated(popupImageWindow);
+  }
+// ---------------------------
 
-  // 1-й параметр - данные карточек из initialCards,
-  // 2-ой параметр - функция удаления карточки
-    const cardItem = createCard(item, deleteCard);
+// *-- закрытие модальных окон по клику на крестик --
+closePopupButtons.forEach(closeModal);
 
-    // добавляю карточку/и в конец cardsContainer
-    cardsContainer.append(cardItem);
-  })
-}
+// ---------------------------
 
-// вывожу массив карточек на страницу, вызывая функцию
-showCards(initialCards);
+// *-- вызов функций открытия модального окна по кнопке --
 
-// ! РАБОТА НАД ПР6
-// импорт главного файла стилей 
-import '../pages/index.css';
-import { initialCards } from '../scripts/cards.js';
+openPopupWindow(openEditButton, popapProfile);
+openPopupWindow(openAddButton, boxPopupNewCard);
+
+// ---------------------------
