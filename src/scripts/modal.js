@@ -1,60 +1,47 @@
-// ! файл для работы модальных окон
-// из чек-листа: в файле modal.js описаны функции для работы с модальными окнами: 
-// функция открытия модального окна,
-// функция закрытия модального окна,
-// функция-обработчик события нажатия Esc и функция-обработчик события клика по оверлею;
+// ФАЙЛ ДЛЯ РАБОТЫ МОДАЛЬНЫХ ОКОН
 // ---------------------------
 
-export { openPopupWindow, closeModal, addPopupOpened, addPopupAnimated, removePopupOpened };
+export { closeModalEsc, openModal, closeModal, closeModalOverlay };
 // ---------------------------
-
-// *-- функция открытия модального окна по крестику --
-function openPopupWindow(button, window) {
-  button.addEventListener('click', function (event) {
-    addPopupOpened(window);
-  });
-}
-
-// *-- функция закрытия модального окна по крестику --
-function closeModal(button) {
-  const popupToClose = button.closest('div.popup');
-  button.addEventListener('click', function (event) { 
-    removePopupOpened(popupToClose);
-    addPopupAnimated(popupToClose);
-  });
-}
-
-// *-- функция закрытия модального окна по оверлею --
-function closeModalByOverlay(evt) {
-  if (evt.target === evt.currentTarget) {
-    const popupToClose = document.querySelector('.popup_is-opened');
-    removePopupOpened(popupToClose);
-  }
-}
 
 // *-- функция закрытия модального окна по esc --
-function closeModalByEsc(evt) {
+function closeModalEsc(evt) {
   if (evt.key === 'Escape') {
     const openedPopup = document.querySelector('.popup_is-opened');
-    removePopupOpened(openedPopup);
+    closeModal(openedPopup);
   }
 }
+// ---------------------------
 
-// *-- функция добавления класса popup_is-opened --
-function addPopupOpened(popup) {
-  popup.classList.add('popup_is-opened');
-  popup.addEventListener('click', closeModalByOverlay);
-  document.addEventListener('keydown', closeModalByEsc);
+// *-- функция открытия модальных окон --
+function openModal(modal) {
+  modal.classList.add('popup_is-opened');
+  document.addEventListener('keydown', closeModalEsc);
+}
+// ---------------------------
+
+// *-- функция закрытия модальных окон --
+function closeModal(modal) {
+  modal.classList.remove('popup_is-opened');
+  document.removeEventListener('keydown', closeModalEsc);
+}
+// ---------------------------
+
+// *-- функция закрытия модальных окон по оверлею --
+
+function closeModalOverlay(popup) {
+  return function (event) {
+    if (event.target === popup || event.target.classList.contains("popup__close")) {
+      closeModal(popup);
+    }
+  };
 }
 
-// *-- функция удаления класса popup_is-opened --
-function removePopupOpened(popup) {
-  popup.classList.remove('popup_is-opened');
-  popup.removeEventListener('click', closeModalByOverlay);
-  document.removeEventListener('keydown', closeModalByEsc);
-}
+const boxPopup = document.querySelectorAll('.popup');
 
-// *-- функция удаления класса popup_is-animated --
-function addPopupAnimated(popup) {
-  popup.classList.add('popup_is-animated');
-}
+boxPopup.forEach(function(popup) {
+  popup.addEventListener("click", closeModalOverlay(popup));
+});
+
+// ------------------------------------------------------------------------------------------
+
