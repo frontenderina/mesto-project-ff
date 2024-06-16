@@ -1,7 +1,7 @@
 // ФАЙЛ ДЛЯ РАБОТЫ МОДАЛЬНЫХ ОКОН
 // ---------------------------
 
-export { closeModalEsc, openModal, closeModal, closeModalOverlay };
+export { openModal, closeModal, closeModalOverlay };
 // ---------------------------
 
 // *-- функция закрытия модального окна по esc --
@@ -28,20 +28,11 @@ function closeModal(modal) {
 // ---------------------------
 
 // *-- функция закрытия модальных окон по оверлею --
-
 function closeModalOverlay(popup) {
   return function (event) {
-    if (event.target === popup || event.target.classList.contains("popup__close")) {
+    if (event.target === popup) {
       closeModal(popup);
     }
   };
 }
-
-const boxPopup = document.querySelectorAll('.popup');
-
-boxPopup.forEach(function(popup) {
-  popup.addEventListener("click", closeModalOverlay(popup));
-});
-
 // ------------------------------------------------------------------------------------------
-

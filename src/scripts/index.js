@@ -10,7 +10,7 @@
 import '../pages/index.css';
 import { createCard, deleteCard, activeLikeButton } from '../scripts/card.js';
 import { initialCards } from '../scripts/cards.js';
-import { closeModalEsc, openModal, closeModal, closeModalOverlay } from '../scripts/modal.js';
+import { openModal, closeModal, closeModalOverlay } from '../scripts/modal.js';
 // ---------------------------
 
 // TODO: DOM узлы
@@ -103,43 +103,34 @@ boxPopup.forEach(function(popup) {
 });
 // ---------------------------
 
-// *-- закрытие всех модальных окон по крестику. Вариант 1 --
+// *-- закрытие всех модальных окон по крестику --
 
 closePopupButtons.forEach(closePopupButtons => {
   const closestPopup = closePopupButtons.closest('.popup');
-  closePopupButtons.addEventListener('click', () => 
+  closePopupButtons.addEventListener('click', () =>
     closeModal(closestPopup)
   );
 });
 // ---------------------------
 
-// *-- закрытие всех модальных окон по крестику. Вариант 2 --
+// *-- закрытие всех модальных окон по оверлею --
 
-// дожидаюсь полной загрузки DOM
-// document.addEventListener('DOMContentLoaded', () => {
-//   for (let i = 0; i <= 2; i++) {
-//     closePopupButtons[i].addEventListener('click', () => {
-      // сбрасываю поля инпутов профиля
-      // formEditProfile.reset();
-      // вызываю функцию закрытия попапа профиля
-      // closeModal(popupProfile);
-      // сбрасываю поля инпутов новой карточки
-      // formNewCard.reset();
-      // вызываю функцию закрытия попапа новой карточки
-      // closeModal(boxPopupNewCard);
-      // вызываю функцию закрытия большой картинки
-//       closeModal(boxPopupBigImage);
-//     });
-//   }
-// });
+// прохожу циклом по каждому div-контейнеру попапов
+boxPopup.forEach(function(popup) {
+  // ревьюер: нужно использовать событие mousedown, а не click, чтобы не закрыть случайно попап 
+  // по оверлею,если нажать мышкой внутри попапа, а потом, не разжимая, передвинуть курсор 
+  // на оверлей. Такой баг появляется с событием click.
+  popup.addEventListener('mousedown', closeModalOverlay(popup));
+});
 // ---------------------------
 
 // TODO: ФОРМА РЕДАКТИРОВАНИЯ ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ
 
 // ставлю слушатель на кнопку-ручку формы редактирования профиля пользователя
 openEditButton.addEventListener('click', function () {
-  // сбрасываю поля инпутов профиля
-  formEditProfile.reset();
+  // подставляю значения полей, взятыми со страницы сайта
+  nameInput.value = profileTitle.textContent;
+  jobInput.value = profileDescription.textContent;
   openModal(popupProfile);
 });
 // ---------------------------
@@ -192,8 +183,6 @@ function createNewCardData(evt) {
   
   // добавляю карточку на страницу в начало
   cardsContainer.prepend(postNewCard);
-  // сбрасываю значения полей ввода
-  evt.target.reset();
   
   // вызываю функцию закрытия модального окна новой карточки
   closeModal(boxPopupNewCard);
@@ -225,4 +214,3 @@ function openImagePopup(initialCards) {
   openModal(boxPopupBigImage)
 }
 // ------------------------------------------------------------------------------------------
-
