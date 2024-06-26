@@ -14,9 +14,30 @@
   margin-bottom: 0;
 }
 
+/* красная нижняя граница рамки - отображение некорректных данных */
+/* popup__input - инпуты полей пользователя и новой карточки */
+/* по умолчанию пустому полю присваивают псевдокласс :invalid: */
+/* .popup__input:invalid {
+  border-bottom: 1px solid #FF0000;
+} */
+
 @media screen and (max-width: 568px) {
   .popup__title {
     font-size: 12px;
     line-height: 15px;
   }
+}
+
+/* нижняя граница рамки становится красной всякий раз, 
+когда введённые данные некорректны */
+.popup__input_type_error {
+  border-bottom: 1px solid #FF0000;
+}
+
+.popup__input-error {
+  font-size: 12px;
+  color: #FF0000;
+  min-height: 28px;
+  display: block;
+  width: 100%;
 }
