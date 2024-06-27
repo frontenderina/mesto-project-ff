@@ -218,6 +218,25 @@ function openImagePopup(initialCards) {
 // ! ПР7
 
 
+// объект с настройками валидации (все нужные функциям классы и селекторы элементов)
+const validationConfig = {
+  // формы пользователя и новой карточки
+  // получаю значение ключа-свойства - validationConfig.formSelector, чтобы заменить в разных функциях кода класс .popup__form
+  formSelector: '.popup__form',
+  // инпут-поля форм пользователя и новой карточки
+  inputSelector: '.popup__input', // validationConfig.inputSelector
+  // кнопки "сохранить" форм пользователя и новой карточки
+  submitButtonSelector: '.popup__button', // validationConfig.submitButtonSelector
+  // класс выключенных кнопок "сохранить" форм
+  inactiveButtonClass: 'popup__button_disabled', // validationConfig.inactiveButtonClass
+  // класс для невалидного inputa полей
+  inputErrorClass: 'form__input_type_error', // validationConfig.inputErrorClass
+  // класс ошибки span-полей форм 
+  errorClass: 'form__input-error_active' // validationConfig.errorClass
+};
+
+// ---------------------------
+
 // функция показывает ошибку, если любое из полей формы (пользователя или новой карточки) НЕвалидно
 // добавляю formElement первым параметром функции. Это делает функцию универсальной.
 // formElement - любая из форм, inputElement - поле input любой из форм
@@ -226,9 +245,11 @@ function showInputError(formElement, inputElement, errorMessage) {
   // errorElement - элемент ошибки (span), найденной внутри formElement
   const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
   // добавляю класс для невалидного inputa
-  inputElement.classList.add('popup__input_type_error');
+  // класс-значение беру из функции validationConfig
+  inputElement.classList.add(validationConfig.inputErrorClass);
   // для span с ошибкой добавляю класс, показываю текст ошибки
-  errorElement.classList.add('popup__input-error_active');
+  // validationConfig.errorClass - класс-значение из функции validationConfig
+  errorElement.classList.add(validationConfig.errorClass);
   errorElement.textContent = errorMessage;
 };
 
@@ -241,9 +262,12 @@ function hideInputError(formElement, inputElement) {
   // выбираю элемент ошибки на основе уникального класса
   // errorElement - элемент ошибки, найденной внутри formElement
   const errorElement = formElement.querySelector(`.${inputElement.id}-error`);
-  inputElement.classList.remove('popup__input_type_error');
+  // удаляю класс для inputa
+  // класс-значение беру из функции validationConfig
+  inputElement.classList.remove(validationConfig.inputErrorClass);
   // для span с ошибкой убираю класс, скрываю текст ошибки
-  errorElement.classList.remove('popup__input-error_active');
+  // validationConfig.errorClass - -класс-значение из функции validationConfig
+  errorElement.classList.remove(validationConfig.errorClass);
   errorElement.textContent = '';
 };
 
@@ -288,11 +312,13 @@ function checkInputValidity(formElement, inputElement) {
 // функция добавления слушателей полям форм (пользователя и новой карточки)
 function setEventListeners(formElement) {
   // создаю массив из массивоподобного объекта
-  // нахожу все инпуты
-  const inputList = Array.from(formElement.querySelectorAll('.popup__input'));
+  // нахожу все инпуты 
+  // validationConfig.inputSelector - нахожу значение-класс из функции validationConfig
+  const inputList = Array.from(formElement.querySelectorAll(validationConfig.inputSelector));
 
   // получаю кнопку "сохранить" для форм редактирования профиля и новой карточки
-  const buttonElement = formElement.querySelector('.popup__button');
+  // validationConfig.submitButtonSelector - значение-класс из функции validationConfig
+  const buttonElement = formElement.querySelector(validationConfig.submitButtonSelector);
   
   // вызываю toggleButtonState(включает или отключает кнопку на основе данных из toggleButtonState), 
   // вызываю функцию, проверяя состояние кнопки при первой загрузке страницы.
@@ -325,7 +351,8 @@ function setEventListeners(formElement) {
 function enableValidation() {
   // создаю массив из массивоподобного объекта
   // нахожу все формы
-  const formList = Array.from(document.querySelectorAll('.popup__form'));
+  // validationConfig.formSelector - нахожу значение-класс из функции validationConfig
+  const formList = Array.from(document.querySelectorAll(validationConfig.formSelector));
   // перебираю полученную коллекцию, проходясь по каждой форме
     formList.forEach((formElement) => {
 
@@ -366,23 +393,22 @@ function hasInvalidInput(inputList) {
 // ---------------------------
 
 // функция включает или отключает кнопку на основе данных из toggleButtonState
-// функция принимает массив полей ввода и элемент кнопки "сохранить", состояние которой нужно менять
+// принимает массив полей ввода и элемент кнопки "сохранить", состояние которой нужно менять
 function toggleButtonState(inputList, buttonElement) {
   // если есть хотя бы один невалидный инпут
   if (hasInvalidInput(inputList)) {
     // делаю кнопку неактивной, назначая свойство disabled
     buttonElement.disabled = true;
-    buttonElement.classList.add('popup__button_inactive');
+    // добавляю класс, получая значение из функции validationConfig
+    buttonElement.classList.add(validationConfig.inactiveButtonClass);
   }
   // иначе
   else {
     // делаю кнопку активной
     buttonElement.disabled = false;
-    buttonElement.classList.remove('popup__button_inactive');
+    // удаляю класс, получая значение из функции validationConfig
+    buttonElement.classList.remove(validationConfig.inactiveButtonClass);
   }
 };
 
 // ---------------------------
-// -----------------------------------------------------------------
-// -----------------------------------------------------------------
-
