@@ -218,8 +218,6 @@ function openImagePopup(initialCards) {
 // ! ПР7
 
 
-// ! код из тренажёра "Валидация нескольких полей и форм"
-
 // функция показывает ошибку, если любое из полей формы (пользователя или новой карточки) НЕвалидно
 // добавляю formElement первым параметром функции. Это делает функцию универсальной.
 // formElement - любая из форм, inputElement - поле input любой из форм
@@ -234,6 +232,7 @@ function showInputError(formElement, inputElement, errorMessage) {
   errorElement.textContent = errorMessage;
 };
 
+// ---------------------------
 
 // функция скрывает ошибку, если все поля одной из форм (пользователя или новой карточки) валидны
 // добавляю formElement первым параметром функции. Это делает функцию универсальной.
@@ -248,23 +247,43 @@ function hideInputError(formElement, inputElement) {
   errorElement.textContent = '';
 };
 
+// ---------------------------
 
 // функция проверяет поля input форм (пользователя и новой карточки)
 function checkInputValidity(formElement, inputElement) {
+  // свойство patternMismatch в объекте validity отвечает за проверку ввода регулярным выражением. Если поле 
+  // равно true, значит, введённый текст не прошёл проверку
+  if (inputElement.validity.patternMismatch) {
+
+    // встроенный метод setCustomValidity заменяет сообщение от браузера об ошибке
+    // на пользовательское, хранящееся в атрибуте data-error-message (index.html)
+    // данные атрибута доступны у элемента инпута через ключевое слово dataset
+    // !внимание, в js имя атрибута пишется в camelCase (а в HTML мы писали в kebab-case, это не опечатка)
+    inputElement.setCustomValidity(inputElement.dataset.errorMessage);
+  } 
+  // иначе
+  else {
+    // если передать пустую строку, то будут доступны
+    // стандартные браузерные сообщения
+    inputElement.setCustomValidity('');
+  }
+  // теперь, если ошибка вызвана регулярным выражением,
   // в объекте validity есть свойство valid. В нём находится итоговое решение проверки данных. 
   // если во всех других 10 свойствах значения корректны, то поле ввода валидно и свойство valid - true.
   // если введённые данные в поле форм НЕвалидны...
   if (!inputElement.validity.valid) {
     // ...то вызываю функцию демонстрации ошибки в поле
+    // третьим аргументом передаю сообщение об ошибке, которое получаю из validationMessage
+    // переменная validationMessage хранит наше кастомное (пользовательское) сообщение
     showInputError(formElement, inputElement, inputElement.validationMessage);
   } 
-  // иначе
   else {
     // ... скрываю функцию демонстрации ошибки в поле
     hideInputError(formElement, inputElement);
   }
-};
+}
 
+// ---------------------------
 
 // функция добавления слушателей полям форм (пользователя и новой карточки)
 function setEventListeners(formElement) {
@@ -273,17 +292,13 @@ function setEventListeners(formElement) {
   const inputList = Array.from(formElement.querySelectorAll('.popup__input'));
 
   // получаю кнопку "сохранить" для форм редактирования профиля и новой карточки
-  // const buttonElement = formElement.querySelectorAll('.form__submit');
-  // const buttonElement = formElement.querySelectorAll('.popup__button');
-  // !
-  // console.log('есть кнопка?')
+  const buttonElement = formElement.querySelector('.popup__button');
   
-
   // вызываю toggleButtonState(включает или отключает кнопку на основе данных из toggleButtonState), 
   // вызываю функцию, проверяя состояние кнопки при первой загрузке страницы.
   // так она перестанет быть активной до ввода данных в одно из полей
   // передаю ей массив полей и кнопку
-  // toggleButtonState(inputList, buttonElement);
+  toggleButtonState(inputList, buttonElement);
 
   // перебираю полученную коллекцию, проходясь по каждому полю форм
   inputList.forEach((inputElement) => {
@@ -299,11 +314,12 @@ function setEventListeners(formElement) {
       // функция включает или отключает кнопку на основе данных из toggleButtonState
       // вызываю функцию, проверяя состояние кнопки при каждом изменении символа в любом из полей
       // вызываю toggleButtonState и передаю ей массив полей и кнопку
-      // toggleButtonState(inputList, buttonElement);
+      toggleButtonState(inputList, buttonElement);
     });
   });
 };
 
+// ---------------------------
 
 // функция добавления слушателей формам (пользователя и новой карточки)
 function enableValidation() {
@@ -329,47 +345,44 @@ function enableValidation() {
 
 enableValidation();
 
+// ---------------------------
+
 // функция проверяет наличие невалидного поля и сигнализирует, можно ли разблокировать кнопку сабмита "сохранить"
 // принимает массив полей формы и возвращает true, если в нём хотя бы одно поле не валидно, и false, если все валидны
-// function hasInvalidInput(inputList) {
+function hasInvalidInput(inputList) {
   // метод some проверяет валидацию
-  // Если поле не валидно, колбэк вернёт true
-  // Обход массива прекратится и вся функция
+  // если поле не валидно, колбэк вернёт true
+  // обход массива прекратится и вся функция
   // hasInvalidInput вернёт true
-  // return inputList.some((inputElement) => {
+  return inputList.some((inputElement) => {
 
     // проверяет, является ли значение, введенное пользователем в определенный элемент (например, текстовое поле), корректным согласно заданным правилам, которые я установила
     // validity - свойство элемента формы, которое содержит информацию о том, соответствует ли значение элемента заданным правилам валидации (корректно ли оно).
     // .valid - метод, который позволяет узнать, является ли значение элемента корректным согласно заданным правилам. Если значение корректно, метод возвращает true, иначе - false.
-//     return !inputElement.validity.valid;
-//   });
-// }
+    return !inputElement.validity.valid;
+  });
+}
 
-// let buttonElement = formElement.querySelectorAll('.popup__button');
+// ---------------------------
 
 // функция включает или отключает кнопку на основе данных из toggleButtonState
 // функция принимает массив полей ввода и элемент кнопки "сохранить", состояние которой нужно менять
-// function toggleButtonState(inputList, buttonElement) {
+function toggleButtonState(inputList, buttonElement) {
   // если есть хотя бы один невалидный инпут
-  // if (hasInvalidInput(inputList)) {
-    // делаю кнопку неактивной, назначая свойство disabled 
-    // buttonElement.disabled = true;
-    // !
-    // console.log('кнопка активна?');
-    // buttonElement.classList.add('form__submit_inactive');
-    // buttonElement.classList.add('popup__button_inactive');
-    // !
-  //   console.log('добавился класс кнопке?');
-  // } 
+  if (hasInvalidInput(inputList)) {
+    // делаю кнопку неактивной, назначая свойство disabled
+    buttonElement.disabled = true;
+    buttonElement.classList.add('popup__button_inactive');
+  }
   // иначе
-  // else {
+  else {
     // делаю кнопку активной
-    // buttonElement.disabled = false;
-    // buttonElement.classList.remove('form__submit_inactive');
-//     buttonElement.classList.remove('popup__button_inactive');
-//   }
-// };
+    buttonElement.disabled = false;
+    buttonElement.classList.remove('popup__button_inactive');
+  }
+};
 
+// ---------------------------
 // -----------------------------------------------------------------
 // -----------------------------------------------------------------
 
