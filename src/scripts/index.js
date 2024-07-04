@@ -156,9 +156,9 @@ boxPopup.forEach(function(popup) {
 
 // ставлю слушатель на кнопку-ручку формы редактирования профиля пользователя
 openEditButton.addEventListener('click', function () {
-  // подставляю значения полей, взятыми со страницы сайта
-  nameInput.value = profileTitle.textContent;
-  jobInput.value = profileDescription.textContent;
+  // !тестово закрываю строки ниже подставляю значения полей, взятыми со страницы сайта
+  // nameInput.value = profileTitle.textContent;
+  // jobInput.value = profileDescription.textContent;
 
   // очищаю ошибки валидации и делаю кнопку неактивной вызовом функции clearValidation
   clearValidation(formEditProfile, validationConfig);
@@ -168,23 +168,33 @@ openEditButton.addEventListener('click', function () {
 
 // *-- ввод данных в форму редактирования профиля --
 
-function handleFormSubmit(evt) {
+// прикрепляю обработчик к форме редактирования профиля
+// он следит за событием “submit” - «отправка»
+// таким образом сохраняю введённые данные в форму
+formEditProfile.addEventListener('submit', function(evt) {
   // отменяю стандартную отправку формы
   // при этом перезагрузки страницы и отправки данных не произойдёт
   evt.preventDefault();
   
-  // вставляю новые значения с помощью textContent
   profileTitle.textContent = nameInput.value;
   profileDescription.textContent = jobInput.value;
-  
+
+  // ПР7 создаю новый объект
+  // наполняю его значениями, введёнными в поля формы инпутов редактирования профиля
+  const inputsUserInfoApi = {
+    // nameInput - dom-инпут профиля пользователя. Имя.
+    name: nameInput.value,
+    // jobInput - dom-инпут профиля пользователя. Описание занятия.
+    about: jobInput.value
+  };
+
+  // ПР7 вызываю функцию обновления инфо пользователя на сервере
+  // с параметром значений полей инпутов инфо пользователя
+  updateUserInfoApi(inputsUserInfoApi);
+
   // вызываю функцию закрытия модального окна редактирования профиля
   closeModal(popupProfile);
-}
-
-  // прикрепляю обработчик к форме редактирования профиля
-  // он следит за событием “submit” - «отправка»
-  // таким образом сохраняю введённые данные в форму
-formEditProfile.addEventListener('submit', handleFormSubmit);
+})
 // ------------------------------------------------------------------------------------------
 
 // TODO: ФОРМА ДОБАВЛЕНИЯ НОВОЙ КАРТОЧКИ
@@ -205,19 +215,42 @@ function createNewCardData(evt) {
   // отменяю стандартную отправку формы
   evt.preventDefault();
   
+  // technical
+  // ? возможно эти строчки нужно закрыть комментариями, а вместо них подставить данные карточки с сервера (см.ниже)
+  // ! ТЕСТ-закрытие
   // создаю новый объект 
-  const newCardData = {
-    // наполняю новый объект значениями, 
+  // const newCardData = {
+    // наполняю новый объект значениями,
     // введённые в поля формы инпутов новой карточки
-    name: nameNewCard.value,
-    link: linkNewCard.value,
-  }
+  //   name: nameNewCard.value,
+  //   link: linkNewCard.value,
+  // }
 
-  const postNewCard = createCard(newCardData, deleteCard, activeLikeButton, openImagePopup);
+  // !ПР7 перенесла тестово строчки снизу. присваиваю ипутам новой карточки значения полей новой карточки с сервера
+  // создаю новый объект
+  // наполняю его значениями, введёнными в поля формы инпутов новой карточки
+  const inputsNewCardApi = {
+    // nameNewCard - dom-инпут для введения названия места новой карточки
+    name: nameNewCard.value,
+    // linkNewCard - dom-инпут для ссылки на картинку нового места
+    link: linkNewCard.value
+  };
+
+  // technical
+  // ? возможно эту строчку нужно закрыть и заменить на актуальную переменную
+  // ! ТЕСТ-закрытие
+  // const postNewCard = createCard(newCardData, deleteCard, activeLikeButton, openImagePopup);
   
+  // ПР7
+    const postNewCard = createCard(inputsNewCardApi, deleteCard, activeLikeButton, openImagePopup);
+
+  // ПР7 вызываю функцию добавления новой карточки с сервера с параметром 
+  // значений полей инпутов новой карточки с сервера
+  postNewCardApi(inputsNewCardApi);
+
   // добавляю карточку на страницу в начало
   cardsContainer.prepend(postNewCard);
-  
+
   // вызываю функцию закрытия модального окна новой карточки
   closeModal(boxPopupNewCard);
 }
@@ -247,8 +280,6 @@ function openImagePopup(initialCards) {
   // аргумент - div-контейнер для модального окна большой картинки
   openModal(boxPopupBigImage)
 }
-
-// ---------------------------
 
 // ------------------------------------------------------------------------------------------
 
@@ -298,7 +329,7 @@ const promiseUserDataApi = new Promise((resolve, reject) => {
   // !код тела условной конструкции (if/else) заключён в фигурные скобки. После них точки с запятой не нужны.
   if (userDataApi) {
     // technical
-    console.log(userDataApi); // true
+    // console.log(userDataApi); // true
 
     // функция resolve переводит промис в статус «исполнен», 
     // а значение, переданное этой функции, затем передаётся методу then
@@ -394,7 +425,7 @@ const cardElement = cardTemplate.querySelector('.places__item').cloneNode(true);
 const a = cardElement.querySelector('.card__title');
 
 
-// *функция загрузки карточек с сервера
+// *функция загрузки карточек студентов с сервера
   
 function showArrayCardsApi() {
   fetch('https://nomoreparties.co/v1/wff-cohort-16/cards', {
@@ -409,9 +440,9 @@ function showArrayCardsApi() {
   //  получаю из промиса массив карточек, загруженных студентами моей когорты
   .then((arrayCardsApi) => {
 
-    // !получаю template-картинку. Так она находится в другом файле и не отображается
+    // !получаю template-картинку. Так она находится в другом файле и не отображается. Нужно импортировать
     const cardImage = cardElement.querySelector('.card__image');
-    console.log(cardImage);
+    // console.log(cardImage);
     
     const colbasiv = arrayCardsApi;
     cardImage.src = colbasiv.link;
@@ -442,3 +473,76 @@ function showArrayCardsApi() {
   // });
 
 // ---------------------------
+
+// const newCardApi = {
+//   name: 'Птычка',
+//   link: 'https://pic.rutubelist.ru/video/bc/0b/bc0b6490ff2d7151ff4c2b2c21a195fe.jpg',
+// };
+
+// *функция добавления новой карточки с сервера
+
+function postNewCardApi(newCardApi) {
+  fetch('https://nomoreparties.co/v1/wff-cohort-16/cards', {
+    // использую метод POST для отправки данных на сервер
+    method: 'POST',
+    headers: {
+      authorization: 'a409d782-c5f1-42d2-b1ba-a1f104a14009',
+      'Content-Type': 'application/json'
+    },
+    // преобразую объект newCardApi методом JSON.stringify в строку (ключ и значение 
+    // в двойных кавычках) для передачи серверу
+    body: JSON.stringify(newCardApi)
+  })
+  // метод json читает ответ от сервера в формате json и возвращает промис
+  // из этого промиса потом можно доставать нужные нам данные
+  .then((res) => {
+    return res.json()
+  })
+
+  .then((result) => {
+    console.log(result) // объект загруженной мною карточки с сервера, расшифрованной методом JSON (уже с одинарными кавычками в консоли)
+  })
+
+  .catch((err) => {
+    console.log('Не добавляется корректно моя карточка на сервер. Ошибка: ', err);
+  })
+}
+
+// ---------------------------
+
+// отредактированные данные профиля должны сохраняться на сервере. 
+// Для этого отправляю запрос методом PATCH. 
+// Он подходит для частичного обновления ресурса, применяется только к изменному фрагменту.
+// получаю данные методом PATCH
+
+// const newInfoUserApi = {
+  //   name: 'Красная шапочка',
+  //   about: 'Курьер'
+  // };
+
+// *функция обновления информации при редактировании профиля
+
+function updateUserInfoApi(newInfoUserApi) {
+  fetch('https://nomoreparties.co/v1/wff-cohort-16/users/me', {
+    method: 'PATCH',
+    headers: {
+      authorization: 'a409d782-c5f1-42d2-b1ba-a1f104a14009',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(newInfoUserApi)
+  })
+  .then((res) => {
+    // responce-объект (не в промисе) инфо о пользователе, но без добавленных мною данных (name, about)
+    // console.log(res);
+    return res.json();
+  })
+  .then((result) => {
+    // объект с добавленными мною данными (name, about) из newInfoUserApi
+    // console.log(result)
+  })
+  .catch((err) => {
+    console.log('Не обновляет инфо при редактировании профиля. Ошибка: ', err);
+  })
+}
+
+// -------
