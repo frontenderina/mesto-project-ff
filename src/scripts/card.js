@@ -7,10 +7,10 @@
 export { createCard, deleteCard, activeLikeButton };
 // ---------------------------
 
+
 // TODO: Функция создания ОДНОЙ карточки
 const createCard = (card, deleteCard, like, openImagePopup) => {
 
-  // получаю содержимое template
   const cardTemplate = document.querySelector('#card-template').content;
   // получаю объект, включающий фото, кнопку-корзину, заголовок, кнопку-лайк
   // клонирую со всеми потомками методом (cloneNode(true))

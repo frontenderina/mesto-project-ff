@@ -18,3 +18,17 @@
 .card__like-button:hover {
   opacity: 0.6;
 }
+
+/* ПР7 добавление лайку доп.элемента для отображения количества лайков */
+.card__like-button-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.card__like-quantity {
+  display: flex;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 17px;
+  padding-top: 3px;
+}

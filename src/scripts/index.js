@@ -46,6 +46,7 @@ const openEditButton = document.querySelector('.profile__edit-button');
 // ---------------------------
 
 // *-- DOM узлы формы добавления нового места --
+
 // кнопка(+) открытия окна добавления карточки
 const openAddButton = document.querySelector('.profile__add-button');
 // получаю div-контейнер добавления карточки нового места
@@ -77,6 +78,7 @@ const closePopupButtons = document.querySelectorAll('.popup__close');
 const boxPopup = document.querySelectorAll('.popup');
 // получаю кнопку "сохранить" для форм редактирования профиля и новой карточки
 // const saveButton = document.querySelectorAll('.popup__button');
+
 // ---------------------------
 
 // ! ПР7. ТЕСТОВО ЗАКРЫЛА ВЫВОД КАРТОЧЕК, ПОТОМУ КАК ДАННЫЕ БЕРУ С СЕРВЕРА
@@ -105,15 +107,34 @@ const boxPopup = document.querySelectorAll('.popup');
 // TODO: Вывести карточки на страницу
 function showCards(dataCards) {
 
-  // перебираю массив с карточками (initialCards)
+  // перебираю массив с карточками
   // при forEach функция будет вызвана на каждом элементе массива поочерёдно
   dataCards.forEach(function (item) {
 
-    // ?1-й параметр - данные карточек из initialCards,
     // ?2-ой параметр - функция удаления карточки
-    // ! убрала временно openImagePopup из последних параметров в скобках
     const cardItem = createCard(item, deleteCard, activeLikeButton, openImagePopup);
+    
+    // получаю dom-элемент, отображающий количество лайков карточки (индивидуально для каждой из карточки)
+    // ! см. на конструкцию, где cardItem - сама карточка
+    const cardLikeQuantity = cardItem.querySelector('.card__like-quantity');
+    
+    // ! переменная в ожидании своего часа
+    // переменная - id хозяина карточки на сервере
+    const cardOwnerId = item.owner._id;
 
+    // назначаю переменную для количества лайков карточки
+    // свойство likes — оно содержит массив пользователей, лайкнувших карточку
+    // свойство length возвращает длину массива
+    const likesNumber = item.likes.length;
+    
+    // ! заменила innerHTML на textContent. Пока не вижу разницы
+    // свойством innerHTML можно прочитать, изменить или удалить содержимое элемента
+    // при этом оно меняет разметку
+    // cardLikeQuantity.innerHTML = likesNumber;
+    
+    // присваиваю разметке количество лайков
+    cardLikeQuantity.textContent = likesNumber;
+    
     // добавляю карточку/и в конец cardsContainer
     cardsContainer.append(cardItem);
   })
@@ -156,9 +177,10 @@ boxPopup.forEach(function(popup) {
 
 // ставлю слушатель на кнопку-ручку формы редактирования профиля пользователя
 openEditButton.addEventListener('click', function () {
-  // !тестово закрываю строки ниже подставляю значения полей, взятыми со страницы сайта
-  // nameInput.value = profileTitle.textContent;
-  // jobInput.value = profileDescription.textContent;
+  // подставляю значения полей, взятыми со страницы сайта
+  // при открытии модального окна поля заполненны данными пользователя, которые отображены на сайте
+  nameInput.value = profileTitle.textContent;
+  jobInput.value = profileDescription.textContent;
 
   // очищаю ошибки валидации и делаю кнопку неактивной вызовом функции clearValidation
   clearValidation(formEditProfile, validationConfig);
@@ -416,7 +438,8 @@ function showUserDataApi() {
 }
 // ---------------------------
 
-// ! ТЕСТОВ повторно отображаю переменные. Они находятся в других файлах. Разобраться потом с этим при необходимости.
+// ! ТЕСТОВ повторно отображаю переменные. Они находятся в других файлах. 
+// !не получилось разобраться с этим. Почитать, сделать попытку №2.
 // получаю содержимое template
 const cardTemplate = document.querySelector('#card-template').content;
 // получаю объект, включающий фото, кнопку-корзину, заголовок, кнопку-лайк
@@ -439,19 +462,18 @@ function showArrayCardsApi() {
   })
   //  получаю из промиса массив карточек, загруженных студентами моей когорты
   .then((arrayCardsApi) => {
-
     // !получаю template-картинку. Так она находится в другом файле и не отображается. Нужно импортировать
     const cardImage = cardElement.querySelector('.card__image');
     // console.log(cardImage);
     
-    const colbasiv = arrayCardsApi;
-    cardImage.src = colbasiv.link;
-    a.textContent = colbasiv.name;
+    const dataCardsArrayApi = arrayCardsApi;
+    cardImage.src = dataCardsArrayApi.link;
+    // !разобраться с переменными
+    a.textContent = dataCardsArrayApi.name;
 
-    cardsContainer.append(colbasiv.link);
-    cardsContainer.append(colbasiv.name);
+    cardsContainer.append(dataCardsArrayApi.name, dataCardsArrayApi.link);
 
-    showCards(colbasiv);
+    showCards(dataCardsArrayApi);
   })
   .catch((err) => {
     console.log('Не показывает сервер карточки других студентов. Ошибка: ', err);
@@ -474,6 +496,10 @@ function showArrayCardsApi() {
 
 // ---------------------------
 
+// объект для передачи данных новой карточки на сервер
+// использовала его в body: JSON.stringify(newInfoUserApi) в fetch (без функции на тот момент)
+// после получения корректного ответа от сервера объект спрятала комментариями
+// если объект не закрыть, то после каждого обновления он появляется на сайте и не удаляется
 // const newCardApi = {
 //   name: 'Птычка',
 //   link: 'https://pic.rutubelist.ru/video/bc/0b/bc0b6490ff2d7151ff4c2b2c21a195fe.jpg',
@@ -510,11 +536,14 @@ function postNewCardApi(newCardApi) {
 
 // ---------------------------
 
-// отредактированные данные профиля должны сохраняться на сервере. 
-// Для этого отправляю запрос методом PATCH. 
-// Он подходит для частичного обновления ресурса, применяется только к изменному фрагменту.
+// отредактированные данные профиля должны сохраняться на сервере
+// для этого отправляю запрос методом PATCH
+// PATCH подходит для частичного обновления ресурса, применяется только к изменному фрагменту.
 // получаю данные методом PATCH
 
+// объект для передачи данных пользователя на сервер
+// использовала его в body: JSON.stringify(newInfoUserApi) в fetch (без функции на тот момент)
+// после получения корректного ответа от сервера объект спрятала комментариями
 // const newInfoUserApi = {
   //   name: 'Красная шапочка',
   //   about: 'Курьер'
